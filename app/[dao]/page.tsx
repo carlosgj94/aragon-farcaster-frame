@@ -3,18 +3,19 @@ import { Metadata, ResolvingMetadata } from "next";
 
 
 type Props = {
-    params: { id: string }
+    params: { dao: string }
     searchParams: { [key: string]: string | string[] | undefined }
 }
 export async function generateMetadata(
     { params, searchParams }: Props,
     parent: ResolvingMetadata
 ): Promise<Metadata> {
-    const id = params.id
+    const dao = params.dao
+    console.log('HOle: ', params.dao)
 
     const fcMetadata: Record<string, string> = {
         "fc:frame": "vNext",
-        "fc:frame:image": `${process.env['HOST']}/api/image?id=${id}`,
+        "fc:frame:image": `${process.env['HOST']}/api/image?dao=${dao}`,
 
     };
 
@@ -22,7 +23,7 @@ export async function generateMetadata(
         title: 'This is the proposal title',
         openGraph: {
             title: 'This is the proposal title',
-            images: [`/ api / image ? id = ${id} `],
+            images: [`/ api / image ? id = ${dao} `],
         },
         other: {
             ...fcMetadata,

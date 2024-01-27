@@ -9,7 +9,7 @@ let fontData = fs.readFileSync(fontPath)
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const pollId = req.query['id']
+    const pollId = req.query['dao']
     // const fid = parseInt(req.query['fid']?.toString() || '')
     if (!pollId) {
       return res.status(400).send('Missing poll ID');
