@@ -7,7 +7,6 @@ import axios from 'axios';
 
 
 const fontPath = join(process.cwd(), 'Manrope-Regular.ttf')
-// const fontPath = join(process.cwd(), 'Roboto-Regular.ttf')
 let fontData = fs.readFileSync(fontPath)
 
 let ipfsKey = ''
