@@ -19,9 +19,9 @@ export async function generateMetadata(
     };
 
     return {
-        title: 'This is the proposal title',
+        title: 'This is an Aragon proposal title',
         openGraph: {
-            title: 'This is the proposal title',
+            title: 'This is an Aragon proposal title',
             images: [`/api/image?dao=${dao}`],
 
         },

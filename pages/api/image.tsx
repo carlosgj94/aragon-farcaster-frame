@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           flexDirection: 'column',
           padding: 20,
         }}>
-          <h2 style={{ textAlign: 'center', color: 'lightgray' }}>This is the proposal title</h2>
+          <h2 style={{ textAlign: 'center', color: 'lightgray' }}>This is an Aragon proposal title</h2>
           <div style={{
             backgroundColor: '#007bff',
             color: '#fff',
