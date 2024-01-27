@@ -23,7 +23,6 @@ export async function generateMetadata(
         openGraph: {
             title: 'This is an Aragon proposal title',
             images: [`/api/image?dao=${dao}`],
-
         },
         other: {
             ...fcMetadata,

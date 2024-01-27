@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             id
             subdomain
             metadata
-            proposals {
+            proposals(orderBy: id, orderDirection: desc) {
               metadata
               ... on TokenVotingProposal {
                 yes
@@ -51,7 +51,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     )).data.data.dao
 
     let daoIPFS = dao.metadata.includes('ipfs://') ? dao.metadata.substring(7) : dao.metadata
-    let proposalIPFS = dao.proposals[0].metadata.includes('ipfs://') ? dao.proposals[0].metadata.substring(7) : dao.proposals[0].metadata
+
+    let prop = dao.proposals[0].metadata ? dao.proposals[0] : dao.proposals[1]
+    let proposalIPFS = prop.metadata.includes('ipfs://') ? prop.metadata.substring(7) : prop.metadata
+
 
     const daoMetadata = (await axios({
       method: 'post',
@@ -70,6 +73,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         'Accept': 'application/json',
       }
     })).data
+
+    let avatar = daoMetadata.avatar.includes('ipfs://') ? daoMetadata.avatar.substring(7) : daoMetadata.avatar
+
+    let totalUsedVotingPower = BigInt(prop.yes) + BigInt(prop.no) + BigInt(prop.abstain)
+
+    let winningProposal = { label: 'Yay', value: BigInt(prop.yes), percentage: `0` }
+    if (prop.yes > prop.no && prop.abstain) {
+      winningProposal = { label: "Yay", value: BigInt(prop.yes) / BigInt(10 ** 18), percentage: `${BigInt(prop.yes) * BigInt(100) / totalUsedVotingPower}` }
+    } else if (prop.no > prop.abstain) {
+      winningProposal = { label: "Nay", value: BigInt(prop.no), percentage: `${BigInt(prop.no) * BigInt(100) / totalUsedVotingPower}` }
+    } else {
+      winningProposal = { label: "Abstain", value: BigInt(prop.abstain), percentage: `${BigInt(prop.abstain) * BigInt(100) / totalUsedVotingPower}` }
+    }
 
     const svg = await satori(
       <div style={{
@@ -94,7 +110,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             justifyContent: 'space-between',
           }}>
             <div style={{ display: 'flex' }}>
-              <img src="https://pbs.twimg.com/profile_images/1696708161103921152/_6R6pJoS_400x400.jpg"
+              <img src={`https://ipfs.io/ipfs/${avatar}`}
                 alt="Trulli"
                 width="50"
                 height="50"
@@ -115,7 +131,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           </h1>
 
           <p style={{ textAlign: 'start', color: '#616E7C', fontSize: 22, marginTop: 1.2 }}>
-            {proposalMetadata.summary}
+            {proposalMetadata.summary.length > 108 ? proposalMetadata.summary.substring(0, 108) + '...' : proposalMetadata.summary}
           </p>
 
 
@@ -136,7 +152,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 Winning Option
               </p>
               <p style={{ color: '#616E7C', fontSize: '1.25rem', margin: '0.2em' }}>
-                64%
+                {winningProposal.percentage}%
               </p>
             </div>
 
@@ -152,7 +168,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 backgroundColor: '#007bff',
                 padding: 10,
                 borderRadius: 12,
-                width: `64%`,
+                width: `${winningProposal.percentage}%`,
                 whiteSpace: 'nowrap',
                 overflow: 'visible',
               }}></div>
@@ -160,10 +176,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
               <p style={{ color: '#3164FA', fontSize: '1.3rem', margin: '0.2em' }}>
-                No
+                {winningProposal.label}
               </p>
               <p style={{ color: '#616E7C', fontSize: '1.3rem', margin: '0.2em' }}>
-                3.5M wANT
+                {winningProposal.value} wANT
               </p>
             </div>
           </div>
