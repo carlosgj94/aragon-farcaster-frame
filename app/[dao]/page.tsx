@@ -11,7 +11,6 @@ export async function generateMetadata(
     parent: ResolvingMetadata
 ): Promise<Metadata> {
     const dao = params.dao
-    console.log('HOle: ', params.dao)
 
     const fcMetadata: Record<string, string> = {
         "fc:frame": "vNext",
@@ -23,7 +22,8 @@ export async function generateMetadata(
         title: 'This is the proposal title',
         openGraph: {
             title: 'This is the proposal title',
-            images: [`/ api / image ? id = ${dao} `],
+            images: [`/api/image?dao=${dao}`],
+
         },
         other: {
             ...fcMetadata,
