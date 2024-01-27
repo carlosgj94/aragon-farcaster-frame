@@ -177,7 +177,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 {winningProposal.label}
               </p>
               <p style={{ color: '#616E7C', fontSize: '1.3rem', margin: '0.2em' }}>
-                {winningProposal.value} wANT
+                {winningProposal.value.toString()} wANT
               </p>
             </div>
           </div>
