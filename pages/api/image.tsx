@@ -3,18 +3,74 @@ import sharp from 'sharp';
 import satori from "satori";
 import { join } from 'path';
 import * as fs from "fs";
+import axios from 'axios';
+
 
 const fontPath = join(process.cwd(), 'Manrope-Regular.ttf')
 // const fontPath = join(process.cwd(), 'Roboto-Regular.ttf')
 let fontData = fs.readFileSync(fontPath)
 
+let ipfsKey = ''
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const pollId = req.query['dao']
+    const daoId = req.query['dao']
+    console.log(`daoId: ${daoId}`)
     // const fid = parseInt(req.query['fid']?.toString() || '')
-    if (!pollId) {
-      return res.status(400).send('Missing poll ID');
+    if (!daoId) {
+      return res.status(400).send('Missing dao ID');
     }
+
+    const dao = (await axios.post('https://subgraph.satsuma-prod.com/qHR2wGfc5RLi6/aragon/osx-mainnet/version/v1.4.0/api', {
+      query: `
+        query SearchDAO($daoId: ID!) {
+          dao (id: $daoId) {
+            id
+            subdomain
+            metadata
+            proposals {
+              metadata
+              ... on TokenVotingProposal {
+                yes
+                no
+                abstain
+                totalVotingPower
+              }
+            }
+          }
+        }
+      `,
+      variables: {
+        daoId,
+      }
+    },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    )).data.data.dao
+
+    let daoIPFS = dao.metadata.includes('ipfs://') ? dao.metadata.substring(7) : dao.metadata
+    let proposalIPFS = dao.proposals[0].metadata.includes('ipfs://') ? dao.proposals[0].metadata.substring(7) : dao.proposals[0].metadata
+
+    const daoMetadata = (await axios({
+      method: 'post',
+      url: `https://prod.ipfs.aragon.network/api/v0/cat?arg=${daoIPFS}`,
+      headers: {
+        'X-API-KEY': ipfsKey,
+        'Accept': 'application/json',
+      }
+    })).data
+
+    const proposalMetadata = (await axios({
+      method: 'post',
+      url: `https://prod.ipfs.aragon.network/api/v0/cat?arg=${proposalIPFS}`,
+      headers: {
+        'X-API-KEY': ipfsKey,
+        'Accept': 'application/json',
+      }
+    })).data
 
     const svg = await satori(
       <div style={{
@@ -46,7 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 style={{ borderRadius: '50%' }}
               />
               <h2 style={{ textAlign: 'center', color: '#323F4B', fontSize: '1.3rem', paddingLeft: 6 }}>
-                Devolved AI Treasury DAO
+                {daoMetadata.name}
               </h2>
             </div>
 
@@ -56,11 +112,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
           </div>
           <h1 style={{ textAlign: 'start', color: '#323F4B', fontSize: 30, lineHeight: 1, marginBottom: 0, marginTop: 0 }}>
-            This is an Aragon proposal title
+            {proposalMetadata.title}
           </h1>
 
           <p style={{ textAlign: 'start', color: '#616E7C', fontSize: 22, marginTop: 1.2 }}>
-            This is an Aragon proposal description. This is an Aragon proposal description.
+            {proposalMetadata.summary}
           </p>
 
 
