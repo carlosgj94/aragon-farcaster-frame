@@ -9,13 +9,11 @@ import axios from 'axios';
 const fontPath = join(process.cwd(), 'Manrope-Regular.ttf')
 let fontData = fs.readFileSync(fontPath)
 
-let ipfsKey = ''
+let ipfsKey = process.env['IPFS_KEY']
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const daoId = req.query['dao']
-    console.log(`daoId: ${daoId}`)
-    // const fid = parseInt(req.query['fid']?.toString() || '')
     if (!daoId) {
       return res.status(400).send('Missing dao ID');
     }
