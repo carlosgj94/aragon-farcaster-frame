@@ -24,8 +24,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         width: '100%',
         height: '100%',
         backgroundColor: 'white',
-        padding: 24,
+        padding: 12,
         fontSize: 14,
+        aspectRatio: '3/2',
       }}>
         <div style={{
           display: 'flex',
@@ -54,12 +55,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             </h2>
 
           </div>
-          <h1 style={{ textAlign: 'start', color: '#323F4B', fontSize: 30, lineHeight: 1, marginBottom: 0, marginTop: 0.6 }}>
+          <h1 style={{ textAlign: 'start', color: '#323F4B', fontSize: 30, lineHeight: 1, marginBottom: 0, marginTop: 0 }}>
             This is an Aragon proposal title
           </h1>
 
-          <p style={{ textAlign: 'start', color: '#616E7C', fontSize: 22 }}>
-            This is an Aragon proposal description. This is an Aragon proposal description. This is an Aragon proposal description.
+          <p style={{ textAlign: 'start', color: '#616E7C', fontSize: 22, marginTop: 1.2 }}>
+            This is an Aragon proposal description. This is an Aragon proposal description.
           </p>
 
 
@@ -69,15 +70,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             border: '1px',
             borderColor: '#E4E7EB',
             borderRadius: '8px',
-            marginTop: 5,
-            padding: 15,
+            marginTop: 2,
+            padding: 5,
+            paddingLeft: 15,
+            paddingRight: 15,
             boxShadow: '0px 1px 2px 0px rgba(97, 110, 124, 0.05)',
           }}>
             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-              <p style={{ color: '#323F4B', fontSize: '1.25rem', margin: '0.5em' }}>
+              <p style={{ color: '#323F4B', fontSize: '1.25rem', margin: '0.2em' }}>
                 Winning Option
               </p>
-              <p style={{ color: '#616E7C', fontSize: '1.25rem', margin: '0.5em' }}>
+              <p style={{ color: '#616E7C', fontSize: '1.25rem', margin: '0.2em' }}>
                 64%
               </p>
             </div>
@@ -101,15 +104,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-              <p style={{ color: '#3164FA', fontSize: '1.3rem', margin: '0.5em' }}>
+              <p style={{ color: '#3164FA', fontSize: '1.3rem', margin: '0.2em' }}>
                 No
               </p>
-              <p style={{ color: '#616E7C', fontSize: '1.3rem', margin: '0.5em' }}>
+              <p style={{ color: '#616E7C', fontSize: '1.3rem', margin: '0.2em' }}>
                 3.5M wANT
               </p>
             </div>
-
-
           </div>
         </div>
       </div>
