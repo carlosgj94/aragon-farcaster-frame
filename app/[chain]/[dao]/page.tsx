@@ -3,7 +3,7 @@ import { Metadata, ResolvingMetadata } from "next";
 
 
 type Props = {
-    params: { dao: string }
+    params: { dao: string, chain: string }
     searchParams: { [key: string]: string | string[] | undefined }
 }
 export async function generateMetadata(
@@ -11,18 +11,20 @@ export async function generateMetadata(
     parent: ResolvingMetadata
 ): Promise<Metadata> {
     const dao = params.dao
+    let chain = params.chain
+
+    if (!chain) chain = 'mainnet'
 
     const fcMetadata: Record<string, string> = {
         "fc:frame": "vNext",
-        "fc:frame:image": `${process.env['HOST']}/api/image?dao=${dao}`,
-
+        "fc:frame:image": `${process.env['HOST']}/api/image?dao=${dao}&chain=${chain}`,
     };
 
     return {
         title: 'This is an Aragon proposal title',
         openGraph: {
             title: 'This is an Aragon proposal title',
-            images: [`/api/image?dao=${dao}`],
+            images: [`/api/image?dao=${dao}&chain=${chain}`],
         },
         other: {
             ...fcMetadata,

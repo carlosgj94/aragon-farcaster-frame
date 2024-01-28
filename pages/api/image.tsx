@@ -38,8 +38,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       query: `
         query SearchDAO($daoId: ID!) {
           dao (id: $daoId) {
-            id
-            subdomain
             metadata
             proposals(orderBy: id, orderDirection: desc) {
               metadata
@@ -100,6 +98,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else {
       winningProposal = { label: "Abstain", value: BigInt(prop.abstain), percentage: `${BigInt(prop.abstain) * BigInt(100) / totalUsedVotingPower}` }
     }
+    console.log(prop)
 
     const svg = await satori(
       <div style={{
