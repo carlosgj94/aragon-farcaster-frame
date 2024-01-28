@@ -11,14 +11,30 @@ let fontData = fs.readFileSync(fontPath)
 
 let ipfsKey = process.env['IPFS_KEY']
 
+let mainnetSubgraph = process.env['MAINNET_SUBGRAPH']!
+let polygonSubgraph = process.env['POLYGON_SUBGRAPH']!
+let baseSubgraph = process.env['BASE_SUBGRAPH']!
+let arbitrumSubgraph = process.env['ARBITRUM_SUBGRAPH']!
+
+function getSubpgraphLink(chain: string): string {
+  if (chain === 'mainnet') return mainnetSubgraph
+  else if (chain === 'polygon') return polygonSubgraph
+  else if (chain === 'base') return baseSubgraph
+  else return arbitrumSubgraph
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const daoId = req.query['dao']
+    const chain = req.query['chain'] as string
     if (!daoId) {
       return res.status(400).send('Missing dao ID');
     }
+    if (!chain) {
+      return res.status(400).send('Missing chain');
+    }
 
-    const dao = (await axios.post('https://subgraph.satsuma-prod.com/qHR2wGfc5RLi6/aragon/osx-mainnet/version/v1.4.0/api', {
+    const dao = (await axios.post(getSubpgraphLink(chain), {
       query: `
         query SearchDAO($daoId: ID!) {
           dao (id: $daoId) {
