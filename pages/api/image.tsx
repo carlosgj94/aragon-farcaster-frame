@@ -4,6 +4,7 @@ import satori from "satori";
 import { join } from 'path';
 import * as fs from "fs";
 import axios from 'axios';
+import TokenVotingWinningOption from '@/components/TokenVotingWinningOption';
 
 
 const fontPath = join(process.cwd(), 'Manrope-Regular.ttf')
@@ -16,12 +17,15 @@ let polygonSubgraph = process.env['POLYGON_SUBGRAPH']!
 let baseSubgraph = process.env['BASE_SUBGRAPH']!
 let arbitrumSubgraph = process.env['ARBITRUM_SUBGRAPH']!
 
-function getSubpgraphLink(chain: string): string {
+
+const getSubpgraphLink = (chain: string): string => {
   if (chain === 'mainnet') return mainnetSubgraph
   else if (chain === 'polygon') return polygonSubgraph
   else if (chain === 'base') return baseSubgraph
   else return arbitrumSubgraph
 }
+
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -47,6 +51,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 abstain
                 totalVotingPower
               }
+              ... on MultisigProposal {
+                approvals
+                minApprovals
+              }
             }
           }
         }
@@ -64,8 +72,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     let daoIPFS = dao.metadata.includes('ipfs://') ? dao.metadata.substring(7) : dao.metadata
 
-    let prop = dao.proposals[0].metadata ? dao.proposals[0] : dao.proposals[1]
-    let proposalIPFS = prop.metadata.includes('ipfs://') ? prop.metadata.substring(7) : prop.metadata
+    let lastProposal = dao.proposals[0].metadata ? dao.proposals[0] : dao.proposals[1]
+    let proposalIPFS = lastProposal.metadata.includes('ipfs://') ? lastProposal.metadata.substring(7) : lastProposal.metadata
 
 
     const daoMetadata = (await axios({
@@ -87,18 +95,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })).data
 
     let avatar = daoMetadata.avatar.includes('ipfs://') ? daoMetadata.avatar.substring(7) : daoMetadata.avatar
-
-    let totalUsedVotingPower = BigInt(prop.yes) + BigInt(prop.no) + BigInt(prop.abstain)
-
-    let winningProposal = { label: 'Yay', value: BigInt(prop.yes), percentage: `0` }
-    if (prop.yes > prop.no && prop.abstain) {
-      winningProposal = { label: "Yay", value: BigInt(prop.yes) / BigInt(10 ** 18), percentage: `${BigInt(prop.yes) * BigInt(100) / totalUsedVotingPower}` }
-    } else if (prop.no > prop.abstain) {
-      winningProposal = { label: "Nay", value: BigInt(prop.no), percentage: `${BigInt(prop.no) * BigInt(100) / totalUsedVotingPower}` }
-    } else {
-      winningProposal = { label: "Abstain", value: BigInt(prop.abstain), percentage: `${BigInt(prop.abstain) * BigInt(100) / totalUsedVotingPower}` }
-    }
-    console.log(prop)
 
     const svg = await satori(
       <div style={{
@@ -124,7 +120,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }}>
             <div style={{ display: 'flex' }}>
               <img src={`https://ipfs.io/ipfs/${avatar}`}
-                alt="Trulli"
+                alt="Aragon Proposal"
                 width="50"
                 height="50"
                 style={{ borderRadius: '50%' }}
@@ -146,56 +142,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           <p style={{ textAlign: 'start', color: '#616E7C', fontSize: 22, marginTop: 1.2 }}>
             {proposalMetadata.summary.length > 108 ? proposalMetadata.summary.substring(0, 108) + '...' : proposalMetadata.summary}
           </p>
-
-
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            border: '1px',
-            borderColor: '#E4E7EB',
-            borderRadius: '8px',
-            marginTop: 2,
-            padding: 5,
-            paddingLeft: 15,
-            paddingRight: 15,
-            boxShadow: '0px 1px 2px 0px rgba(97, 110, 124, 0.05)',
-          }}>
-            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-              <p style={{ color: '#323F4B', fontSize: '1.25rem', margin: '0.2em' }}>
-                Winning Option
-              </p>
-              <p style={{ color: '#616E7C', fontSize: '1.25rem', margin: '0.2em' }}>
-                {winningProposal.percentage}%
-              </p>
-            </div>
-
-            <div style={{
-              display: 'flex',
-              backgroundColor: '#E4E7EB',
-              borderRadius: 12,
-              width: `100%`,
-              whiteSpace: 'nowrap',
-              overflow: 'visible',
-            }}>
-              <div style={{
-                backgroundColor: '#007bff',
-                padding: 10,
-                borderRadius: 12,
-                width: `${winningProposal.percentage}%`,
-                whiteSpace: 'nowrap',
-                overflow: 'visible',
-              }}></div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-              <p style={{ color: '#3164FA', fontSize: '1.3rem', margin: '0.2em' }}>
-                {winningProposal.label}
-              </p>
-              <p style={{ color: '#616E7C', fontSize: '1.3rem', margin: '0.2em' }}>
-                {winningProposal.value.toString()} wANT
-              </p>
-            </div>
-          </div>
+          <TokenVotingWinningOption proposal={lastProposal} />
         </div>
       </div>
       ,
